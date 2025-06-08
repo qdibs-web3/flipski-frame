@@ -3,7 +3,6 @@ import {
   useConnect,
   useDisconnect,
   useAddress,
-  useUser,
   useConnectionStatus,
   useSigner,
 } from "@thirdweb-dev/react";
@@ -31,7 +30,8 @@ export const WalletProvider = ({ children }) => {
   const { disconnect: thirdwebDisconnect } = useDisconnect();
   const thirdwebConnectionStatus = useConnectionStatus();
   const thirdwebSigner = useSigner();
-  const { isLoading: thirdwebIsLoadingUser, error: thirdwebErrorUser } = useUser();
+  const thirdwebIsLoadingUser = false;
+  const thirdwebErrorUser = null;
   
   // Wagmi hooks for Mini App
   const { address: wagmiAddress, isConnected: wagmiIsConnected } = useAccount();
@@ -110,4 +110,3 @@ export const WalletProvider = ({ children }) => {
 };
 
 export const useWallet = () => useContext(WalletContext);
-

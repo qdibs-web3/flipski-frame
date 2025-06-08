@@ -3,7 +3,6 @@ import {
   useConnect,
   useDisconnect,
   useAddress,
-  useUser,
   useConnectionStatus,
   useSigner,
 } from "@thirdweb-dev/react";
@@ -27,11 +26,14 @@ export const WalletProvider = ({ children }) => {
   
   // ThirdWeb hooks for traditional web
   const thirdwebAddress = useAddress();
-  const { connect: thirdwebConnect, isConnecting: thirdwebIsConnecting, error: thirdwebConnectError } = useConnect();
+  const thirdwebConnect = useConnect();
   const { disconnect: thirdwebDisconnect } = useDisconnect();
   const thirdwebConnectionStatus = useConnectionStatus();
   const thirdwebSigner = useSigner();
-  const { isLoading: thirdwebIsLoadingUser, error: thirdwebErrorUser } = useUser();
+  
+  // Remove the problematic useUser hook for now
+  const thirdwebIsLoadingUser = false;
+  const thirdwebErrorUser = null;
   
   // Wagmi hooks for Mini App
   const { address: wagmiAddress, isConnected: wagmiIsConnected } = useAccount();
@@ -42,11 +44,11 @@ export const WalletProvider = ({ children }) => {
 
   // Determine which values to use based on environment
   const address = isMiniApp ? wagmiAddress : thirdwebAddress;
-  const isConnecting = isMiniApp ? wagmiIsConnecting : (thirdwebIsConnecting || isConnectActionLoading);
+  const isConnecting = isMiniApp ? wagmiIsConnecting : (thirdwebConnect.isConnecting || isConnectActionLoading);
   const isConnected = isMiniApp ? wagmiIsConnected : (thirdwebConnectionStatus === "connected" || !!thirdwebAddress);
-  const connectError = isMiniApp ? wagmiConnectError : thirdwebConnectError;
+  const connectError = isMiniApp ? wagmiConnectError : thirdwebConnect.error;
   const userError = isMiniApp ? null : thirdwebErrorUser;
-  const signer = isMiniApp ? null : thirdwebSigner; // Mini App uses different signing approach
+  const signer = isMiniApp ? null : thirdwebSigner;
   const isLoadingUser = isMiniApp ? false : thirdwebIsLoadingUser;
 
   const userRelatedError = userError || connectError;
@@ -68,7 +70,8 @@ export const WalletProvider = ({ children }) => {
           await wagmiConnect({ connector: connectors[0] });
         }
       } else {
-        await thirdwebConnect();
+        // ThirdWeb connect - just call the connect function directly
+        await thirdwebConnect.connect();
       }
     } catch (err) {
       console.error("WalletProvider: Error during connect wallet action:", err);
@@ -101,7 +104,7 @@ export const WalletProvider = ({ children }) => {
         userRelatedIsLoading: isLoadingUser,
         userRelatedError,
         activeWalletInstance: signer || null,
-        isMiniApp, // Add this for components that need to know the environment
+        isMiniApp,
       }}
     >
       {children}

@@ -21,8 +21,6 @@ export default defineConfig({
       'Access-Control-Allow-Origin': '*',
       'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-      'X-Frame-Options': 'ALLOWALL', // Allow embedding in frames
-      'Content-Security-Policy': "frame-ancestors *", // Allow framing from any origin
     },
     proxy: {
       '/api': {

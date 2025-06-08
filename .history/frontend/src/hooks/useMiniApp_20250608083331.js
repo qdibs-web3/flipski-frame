@@ -5,7 +5,6 @@ export const useMiniApp = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState(null);
   const [sdk, setSdk] = useState(null);
-  const [isReady, setIsReady] = useState(false);
 
   useEffect(() => {
     const detectEnvironment = async () => {
@@ -57,11 +56,9 @@ export const useMiniApp = () => {
             try {
               await farcasterSdk.ready();
               console.log('Mini App SDK ready');
-              setIsReady(true);
             } catch (initError) {
               console.warn('SDK initialization warning:', initError);
               // Don't treat this as a fatal error
-              setIsReady(true);
             }
           }
           
@@ -73,21 +70,18 @@ export const useMiniApp = () => {
             console.log('Fallback: Assuming Farcaster frame based on context');
             setIsMiniApp(true);
             setSdk(null);
-            setIsReady(true);
           } else {
             console.log('Assuming web environment');
             setIsMiniApp(false);
             setSdk(null);
-            setIsReady(true);
           }
-          setError(null);
+          setError(null); // Don't treat this as an error, just assume web environment
         }
       } catch (err) {
         console.error('Error detecting Mini App environment:', err);
         setError(err);
         setIsMiniApp(false);
         setSdk(null);
-        setIsReady(true);
       } finally {
         setIsLoading(false);
       }
@@ -96,30 +90,13 @@ export const useMiniApp = () => {
     detectEnvironment();
   }, []);
 
-  // Call ready when app is ready to be displayed
-  const callReady = async () => {
-    if (sdk && isMiniApp && !isReady) {
-      try {
-        console.log('Calling sdk.actions.ready()...');
-        await sdk.actions.ready();
-        console.log('SDK ready called successfully');
-        setIsReady(true);
-      } catch (err) {
-        console.error('Error calling sdk.actions.ready():', err);
-        setIsReady(true); // Set ready anyway to prevent blocking
-      }
-    }
-  };
-
-  console.log('useMiniApp state:', { isMiniApp, isLoading, error, hasSdk: !!sdk, isReady });
+  console.log('useMiniApp state:', { isMiniApp, isLoading, error, hasSdk: !!sdk });
 
   return {
     isMiniApp,
     isLoading,
     error,
-    sdk,
-    isReady,
-    callReady
+    sdk
   };
 };
 

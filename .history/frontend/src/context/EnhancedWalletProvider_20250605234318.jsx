@@ -50,9 +50,8 @@ const EnhancedWalletContext = createContext({
 });
 
 export const EnhancedWalletProvider = ({ children }) => {
-  const { isMiniApp, isLoading, error, callReady, isReady } = useMiniApp();
+  const { isMiniApp, isLoading, error } = useMiniApp();
   const [walletConfig, setWalletConfig] = useState(null);
-  const [appReady, setAppReady] = useState(false);
 
   useEffect(() => {
     if (!isLoading) {
@@ -62,22 +61,7 @@ export const EnhancedWalletProvider = ({ children }) => {
     }
   }, [isMiniApp, isLoading]);
 
-  // Call ready when the app is fully loaded and ready to display
-  useEffect(() => {
-    if (!isLoading && walletConfig && !appReady) {
-      const timer = setTimeout(async () => {
-        if (isMiniApp && callReady) {
-          console.log('App is ready, calling SDK ready...');
-          await callReady();
-        }
-        setAppReady(true);
-      }, 500); // Small delay to ensure everything is rendered
-
-      return () => clearTimeout(timer);
-    }
-  }, [isLoading, walletConfig, isMiniApp, callReady, appReady]);
-
-  console.log('EnhancedWalletProvider state:', { isMiniApp, isLoading, error, walletConfig, appReady, isReady });
+  console.log('EnhancedWalletProvider state:', { isMiniApp, isLoading, error, walletConfig });
 
   // Show loading state while detecting environment or creating config
   if (isLoading) {
