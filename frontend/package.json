@@ -1,0 +1,46 @@
+{
+  "name": "guntflip-vite",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite --host",
+    "build": "NODE_ENV=production npx vite build --debug",
+    "lint": "eslint . --ext js,jsx --report-unused-disable-directives --max-warnings 0",
+    "preview": "vite preview"
+  },
+  "dependencies": {
+    "@farcaster/frame-sdk": "^0.0.60",
+    "@farcaster/frame-wagmi-connector": "^0.0.49",
+    "@tanstack/react-query": "^5.80.6",
+    "@thirdweb-dev/chains": "^0.1.120",
+    "@thirdweb-dev/react": "^4.9.4",
+    "@vitejs/plugin-react": "^4.2.1",
+    "@wagmi/connectors": "^3.1.11",
+    "@wagmi/core": "^2.17.2",
+    "axios": "^1.9.0",
+    "ethers": "^5.8.0",
+    "mongo": "^0.1.0",
+    "moralis": "^2.27.2",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-router-dom": "^7.6.0",
+    "viem": "^2.30.6",
+    "vite": "^5.2.0",
+    "vite-plugin-node-polyfills": "^0.23.0",
+    "wagmi": "^2.15.5",
+    "web-vitals": "^5.0.0"
+  },
+  "devDependencies": {
+    "@types/react": "^18.2.66",
+    "@types/react-dom": "^18.2.22",
+    "eslint": "^8.57.0",
+    "eslint-plugin-react": "^7.34.1",
+    "eslint-plugin-react-hooks": "^4.6.0",
+    "eslint-plugin-react-refresh": "^0.4.6"
+  },
+  "overrides": {
+    "@tanstack/react-query": "^5.80.6"
+  }
+}
+
