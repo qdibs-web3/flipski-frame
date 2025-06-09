@@ -18,7 +18,7 @@ const queryClient = new QueryClient({
   },
 });
 
-// Create Wagmi config for Mini App (CSP-safe)
+// Create Wagmi config for Mini App
 const createMiniAppConfig = () => {
   return createConfig({
     chains: [base],
@@ -29,7 +29,7 @@ const createMiniAppConfig = () => {
   });
 };
 
-// Create Wagmi config for Web (with minimal connectors to avoid CSP issues)
+// Create Wagmi config for traditional web (fallback)
 const createWebConfig = () => {
   return createConfig({
     chains: [base],
@@ -37,9 +37,8 @@ const createWebConfig = () => {
       [base.id]: http(),
     },
     connectors: [
-      // Only include Farcaster connector for web to avoid CSP violations
-      // ThirdWeb will handle other wallet connections
-      miniAppConnector(),
+      // Minimal connectors for web fallback
+      // ThirdWeb will handle the main wallet connections
     ],
   });
 };
@@ -73,7 +72,7 @@ export const EnhancedWalletProvider = ({ children }) => {
         }
         setAppReady(true);
         console.log('App marked as ready');
-      }, 100);
+      }, 100); // Reduced delay for faster loading
 
       return () => clearTimeout(timer);
     }
@@ -133,18 +132,18 @@ export const EnhancedWalletProvider = ({ children }) => {
 
   console.log('Rendering normal app with environment:', isMiniApp ? 'Mini App' : 'Web');
 
-  // Render based on detected environment
+  // Normal operation - render based on detected environment
   return (
     <QueryClientProvider client={queryClient}>
       <WagmiProvider config={walletConfig}>
         <EnhancedWalletContext.Provider value={{ isMiniApp, isLoading, walletConfig }}>
           {isMiniApp ? (
-            // Mini App environment - use only Wagmi (CSP-safe)
+            // Mini App environment - use only Wagmi
             <OriginalWalletProvider>
               {children}
             </OriginalWalletProvider>
           ) : (
-            // Web environment - use ThirdWeb + Wagmi (full wallet support)
+            // Web environment - use ThirdWeb + Wagmi
             <ThirdwebProvider 
               clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || ""}
               activeChain={Base}
