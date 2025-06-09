@@ -74,8 +74,8 @@ const CoinFlipPage = () => {
         // Import Farcaster SDK
         const { sdk } = await import('@farcaster/frame-sdk');
         
-        // Get the Ethereum provider from Farcaster SDK (it returns a Promise)
-        const provider = await sdk.wallet.getEthereumProvider();
+        // Get the Ethereum provider from Farcaster SDK
+        const provider = sdk.wallet.getEthereumProvider();
         console.log("CoinFlipPage: Got Farcaster Ethereum provider:", provider);
         
         // Create wallet client with Farcaster provider

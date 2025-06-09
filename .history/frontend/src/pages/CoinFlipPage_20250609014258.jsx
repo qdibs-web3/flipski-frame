@@ -67,37 +67,22 @@ const CoinFlipPage = () => {
       return null;
     }
     
-    // In mini app mode, use the Farcaster SDK's Ethereum provider
+    // In mini app mode, use Farcaster's wallet client
     if (isMiniApp) {
-      console.log("CoinFlipPage: Mini app mode - using Farcaster SDK Ethereum provider");
+      console.log("CoinFlipPage: Mini app mode - using Farcaster wallet client");
       try {
-        // Import Farcaster SDK
+        // Import Farcaster SDK for wallet client
         const { sdk } = await import('@farcaster/frame-sdk');
+        const provider = await sdk.wallet.ethProvider();
         
-        // Get the Ethereum provider from Farcaster SDK (it returns a Promise)
-        const provider = await sdk.wallet.getEthereumProvider();
-        console.log("CoinFlipPage: Got Farcaster Ethereum provider:", provider);
-        
-        // Create wallet client with Farcaster provider
         return createWalletClient({
           account: walletAddress,
           chain: baseMainnet,
           transport: custom(provider),
         });
       } catch (err) {
-        console.error("CoinFlipPage: Error getting Farcaster Ethereum provider:", err);
-        
-        // Fallback: try window.ethereum
-        console.log("CoinFlipPage: Fallback - trying window.ethereum");
-        if (typeof window !== 'undefined' && window.ethereum) {
-          return createWalletClient({
-            account: walletAddress,
-            chain: baseMainnet,
-            transport: custom(window.ethereum),
-          });
-        }
-        
-        setError("Error initializing wallet. Please try again.");
+        console.error("CoinFlipPage: Error creating Farcaster wallet client:", err);
+        setError("Error initializing Farcaster wallet. Please try again.");
         return null;
       }
     }

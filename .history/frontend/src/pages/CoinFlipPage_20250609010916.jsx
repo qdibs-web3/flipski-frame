@@ -67,42 +67,7 @@ const CoinFlipPage = () => {
       return null;
     }
     
-    // In mini app mode, use the Farcaster SDK's Ethereum provider
-    if (isMiniApp) {
-      console.log("CoinFlipPage: Mini app mode - using Farcaster SDK Ethereum provider");
-      try {
-        // Import Farcaster SDK
-        const { sdk } = await import('@farcaster/frame-sdk');
-        
-        // Get the Ethereum provider from Farcaster SDK (it returns a Promise)
-        const provider = await sdk.wallet.getEthereumProvider();
-        console.log("CoinFlipPage: Got Farcaster Ethereum provider:", provider);
-        
-        // Create wallet client with Farcaster provider
-        return createWalletClient({
-          account: walletAddress,
-          chain: baseMainnet,
-          transport: custom(provider),
-        });
-      } catch (err) {
-        console.error("CoinFlipPage: Error getting Farcaster Ethereum provider:", err);
-        
-        // Fallback: try window.ethereum
-        console.log("CoinFlipPage: Fallback - trying window.ethereum");
-        if (typeof window !== 'undefined' && window.ethereum) {
-          return createWalletClient({
-            account: walletAddress,
-            chain: baseMainnet,
-            transport: custom(window.ethereum),
-          });
-        }
-        
-        setError("Error initializing wallet. Please try again.");
-        return null;
-      }
-    }
-    
-    // Web mode - use window.ethereum
+    // Add a check for window existence first (important for SSR/Vercel)
     if (typeof window === 'undefined' || typeof window.ethereum === "undefined") {
       console.error("CoinFlipPage: window.ethereum is not available. MetaMask or compatible provider not found.");
       setError("MetaMask (or a compatible EIP-1193 provider) not found. Please install MetaMask.");
@@ -126,16 +91,10 @@ const CoinFlipPage = () => {
       setError("Error initializing wallet client. Ensure your wallet is compatible and try again.");
       return null;
     }
-  }, [walletAddress, isMiniApp]);
+  }, [walletAddress]);
   
   // Add function to check and switch chains before transactions
   const ensureCorrectChain = async () => {
-    // In mini app mode, skip chain checking as Farcaster handles this
-    if (isMiniApp) {
-      console.log('Mini app mode: skipping chain check');
-      return true;
-    }
-    
     if (!isBrowser || !window.ethereum) {
       setError("Browser wallet not available");
       return false;

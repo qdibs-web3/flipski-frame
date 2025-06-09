@@ -26,7 +26,7 @@ export const useMiniApp = () => {
         let miniAppDetected = false;
         let farcasterSdk = null;
 
-        // Method 1: Check for Farcaster-specific indicators (safe methods only)
+        // Method 1: Check for Farcaster-specific indicators
         const userAgent = navigator.userAgent || '';
         const isInFrame = window.location !== window.parent.location || window.frameElement !== null;
         const hasFarcasterUA = userAgent.includes('Farcaster') || userAgent.includes('farcaster');
@@ -35,21 +35,10 @@ export const useMiniApp = () => {
         const urlParams = new URLSearchParams(window.location.search);
         const hasFarcasterParams = urlParams.has('fc_frame') || urlParams.has('farcaster');
         
-        // Method 3: Safe hostname checks (avoid cross-origin issues)
-        let hasFarcasterWindow = false;
-        try {
-          // Only check current window hostname, not parent
-          const currentHostname = window.location.hostname;
-          hasFarcasterWindow = isInFrame && (
-            currentHostname.includes('farcaster') ||
-            currentHostname.includes('warpcast') ||
-            currentHostname.includes('trycloudflare') // Development tunnels
-          );
-        } catch (e) {
-          // Ignore cross-origin errors
-          console.log('Cross-origin hostname check failed (expected in mini app)');
-          hasFarcasterWindow = isInFrame; // If we can't check, assume mini app if in frame
-        }
+        // Method 3: Check for Farcaster-specific window properties
+        const hasFarcasterWindow = window.parent !== window && 
+                                  (window.parent.location.hostname.includes('farcaster') ||
+                                   window.parent.location.hostname.includes('warpcast'));
 
         console.log('Detection checks:', {
           userAgent,
@@ -57,7 +46,8 @@ export const useMiniApp = () => {
           hasFarcasterUA,
           hasFarcasterParams,
           hasFarcasterWindow,
-          hostname: window.location.hostname
+          hostname: window.location.hostname,
+          parentHostname: window.parent?.location?.hostname
         });
 
         // If any of these indicators suggest Farcaster, try SDK detection
@@ -87,17 +77,24 @@ export const useMiniApp = () => {
             console.warn('SDK detection failed, using fallback:', sdkError);
             
             // Fallback: if we have strong indicators, assume mini app
-            if (hasFarcasterUA || hasFarcasterParams || isInFrame) {
+            if (hasFarcasterUA || hasFarcasterParams || 
+                (isInFrame && window.location.hostname.includes('trycloudflare'))) {
               console.log('Fallback: Assuming Farcaster mini app based on context');
               miniAppDetected = true;
             }
           }
         }
 
-        // Final fallback for development/testing - if in frame, likely mini app
+        // Final fallback for development/testing
         if (!miniAppDetected && isInFrame) {
-          console.log('Frame detected, assuming mini app for development');
-          miniAppDetected = true;
+          console.log('Frame detected, checking if likely Farcaster context...');
+          // If we're in a frame and the URL suggests it's a tunnel/preview, assume mini app
+          if (window.location.hostname.includes('trycloudflare') || 
+              window.location.hostname.includes('ngrok') ||
+              window.location.hostname.includes('localhost')) {
+            console.log('Development context detected, assuming mini app');
+            miniAppDetected = true;
+          }
         }
 
         console.log('Final detection result:', miniAppDetected);
@@ -108,19 +105,9 @@ export const useMiniApp = () => {
         
       } catch (err) {
         console.error('Error detecting Mini App environment:', err);
-        
-        // Even if detection fails, if we're in a frame, assume mini app
-        const isInFrame = window.location !== window.parent.location || window.frameElement !== null;
-        if (isInFrame) {
-          console.log('Detection failed but in frame - assuming mini app');
-          setIsMiniApp(true);
-          setSdk(null);
-          setError(null);
-        } else {
-          setError(err);
-          setIsMiniApp(false);
-          setSdk(null);
-        }
+        setError(err);
+        setIsMiniApp(false);
+        setSdk(null);
       } finally {
         setIsLoading(false);
       }

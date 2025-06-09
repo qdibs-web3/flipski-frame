@@ -1,6 +1,4 @@
 import React, { createContext, useContext, useState, useEffect } from "react";
-import { ThirdwebProvider } from "@thirdweb-dev/react";
-import { Base } from "@thirdweb-dev/chains";
 import { createConfig, WagmiProvider } from 'wagmi';
 import { base } from 'wagmi/chains';
 import { http } from 'viem';
@@ -115,15 +113,9 @@ export const EnhancedWalletProvider = ({ children }) => {
       <QueryClientProvider client={queryClient}>
         <WagmiProvider config={fallbackConfig}>
           <EnhancedWalletContext.Provider value={{ isMiniApp: false, isLoading: false, walletConfig: fallbackConfig }}>
-            <ThirdwebProvider 
-              clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || ""}
-              activeChain={Base}
-              autoConnect={true}
-            >
-              <OriginalWalletProvider>
-                {children}
-              </OriginalWalletProvider>
-            </ThirdwebProvider>
+            <OriginalWalletProvider>
+              {children}
+            </OriginalWalletProvider>
           </EnhancedWalletContext.Provider>
         </WagmiProvider>
       </QueryClientProvider>
@@ -132,28 +124,14 @@ export const EnhancedWalletProvider = ({ children }) => {
 
   console.log('Rendering normal app with environment:', isMiniApp ? 'Mini App' : 'Web');
 
-  // Render based on detected environment
+  // Render based on detected environment - NO THIRDWEB to avoid CSP violations
   return (
     <QueryClientProvider client={queryClient}>
       <WagmiProvider config={walletConfig}>
         <EnhancedWalletContext.Provider value={{ isMiniApp, isLoading, walletConfig }}>
-          {isMiniApp ? (
-            // Mini App environment - use only Wagmi (CSP-safe)
-            <OriginalWalletProvider>
-              {children}
-            </OriginalWalletProvider>
-          ) : (
-            // Web environment - use ThirdWeb + Wagmi (full wallet support)
-            <ThirdwebProvider 
-              clientId={import.meta.env.VITE_THIRDWEB_CLIENT_ID || ""}
-              activeChain={Base}
-              autoConnect={true}
-            >
-              <OriginalWalletProvider>
-                {children}
-              </OriginalWalletProvider>
-            </ThirdwebProvider>
-          )}
+          <OriginalWalletProvider>
+            {children}
+          </OriginalWalletProvider>
         </EnhancedWalletContext.Provider>
       </WagmiProvider>
     </QueryClientProvider>

@@ -67,25 +67,29 @@ const CoinFlipPage = () => {
       return null;
     }
     
-    // In mini app mode, use the Farcaster SDK's Ethereum provider
+    // In mini app mode, use Wagmi's getWalletClient to get the connected wallet
     if (isMiniApp) {
-      console.log("CoinFlipPage: Mini app mode - using Farcaster SDK Ethereum provider");
+      console.log("CoinFlipPage: Mini app mode - using Wagmi getWalletClient");
       try {
-        // Import Farcaster SDK
-        const { sdk } = await import('@farcaster/frame-sdk');
+        // Import Wagmi's getWalletClient action
+        const { getWalletClient: getWagmiWalletClient } = await import('wagmi/actions');
+        const { getConfig } = await import('wagmi');
         
-        // Get the Ethereum provider from Farcaster SDK (it returns a Promise)
-        const provider = await sdk.wallet.getEthereumProvider();
-        console.log("CoinFlipPage: Got Farcaster Ethereum provider:", provider);
+        // Get the current Wagmi config
+        const config = getConfig();
+        console.log("CoinFlipPage: Got Wagmi config:", config);
         
-        // Create wallet client with Farcaster provider
-        return createWalletClient({
-          account: walletAddress,
-          chain: baseMainnet,
-          transport: custom(provider),
-        });
+        // Get the wallet client from Wagmi (this should be the Farcaster wallet)
+        const wagmiWalletClient = await getWagmiWalletClient(config);
+        
+        if (wagmiWalletClient) {
+          console.log("CoinFlipPage: Successfully got Wagmi wallet client for mini app");
+          return wagmiWalletClient;
+        } else {
+          throw new Error("Wagmi wallet client is null");
+        }
       } catch (err) {
-        console.error("CoinFlipPage: Error getting Farcaster Ethereum provider:", err);
+        console.error("CoinFlipPage: Error getting Wagmi wallet client:", err);
         
         // Fallback: try window.ethereum
         console.log("CoinFlipPage: Fallback - trying window.ethereum");

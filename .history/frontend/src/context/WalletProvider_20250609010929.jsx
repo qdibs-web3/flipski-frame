@@ -33,7 +33,7 @@ export const WalletProvider = ({ children }) => {
   const thirdwebSigner = isMiniApp ? null : useSigner();
   const { isLoading: thirdwebIsLoadingUser, error: thirdwebErrorUser } = isMiniApp ? { isLoading: false, error: null } : useUser();
   
-  // Wagmi hooks (always available, CSP-safe)
+  // Wagmi hooks for Mini App (always available)
   const { address: wagmiAddress, isConnected: wagmiIsConnected } = useAccount();
   const { connect: wagmiConnect, connectors, isPending: wagmiIsConnecting, error: wagmiConnectError } = useWagmiConnect();
   const { disconnect: wagmiDisconnect } = useWagmiDisconnect();
