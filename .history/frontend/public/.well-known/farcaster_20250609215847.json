@@ -14,7 +14,9 @@
     "ogDescription": "The ultimate blockchain coin flip game on Base network. Bet ETH and win instantly!",
     "ogImageUrl": "flipski-frame.vercel.app/miniAppHero.png",
     "screenshotUrls": [
-      "flipski-frame.vercel.app/miniApp1024.png"
+      "flipski-frame.vercel.app/flipski-screenshot-1.png",
+      "flipski-frame.vercel.app/flipski-screenshot-2.png",
+      "flipski-frame.vercel.app/flipski-screenshot-3.png"
     ],
     "primaryCategory": "games",
     "tags": ["gaming", "crypto", "betting", "base", "ethereum"],
