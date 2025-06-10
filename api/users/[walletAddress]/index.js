@@ -1,0 +1,61 @@
+// Import required modules
+require('dotenv').config();
+const User = require('../../models/User');
+const { connectToDatabase, setCorsHeaders } = require('../../db');
+
+// Serverless function handler
+module.exports = async (req, res) => {
+  // Set CORS headers
+  setCorsHeaders(res);
+
+  // Handle OPTIONS request (preflight)
+  if (req.method === 'OPTIONS') {
+    res.status(200).end();
+    return;
+  }
+
+  // Only allow GET requests
+  if (req.method !== 'GET') {
+    return res.status(405).json({ message: 'Method not allowed' });
+  }
+
+  try {
+    // Get wallet address from query parameters
+    const { walletAddress } = req.query;
+    
+    if (!walletAddress) {
+      return res.status(400).json({ message: 'Wallet address is required' });
+    }
+
+    // Connect to the database
+    await connectToDatabase();
+    
+    // Find user by wallet address
+    let user = await User.findOne({ walletAddress: walletAddress.toLowerCase() });
+    
+    // If user doesn't exist, create a new one with default values
+    if (!user) {
+      user = new User({
+        walletAddress: walletAddress.toLowerCase(),
+        xp: 0,
+        level: 1,
+        wins: 0,
+        losses: 0
+      });
+      await user.save();
+    }
+    
+    // Return user data
+    return res.status(200).json({
+      walletAddress: user.walletAddress,
+      xp: user.xp,
+      level: user.level,
+      wins: user.wins,
+      losses: user.losses
+    });
+  } catch (error) {
+    console.error('Error fetching user data:', error);
+    return res.status(500).json({ message: 'Server error', error: error.message });
+  }
+};
+
