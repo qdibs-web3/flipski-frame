@@ -9,15 +9,6 @@ module.exports = async (req, res) => {
   // Set CORS headers
   setCorsHeaders(res);
 
-  // Add extensive logging for debugging
-  console.log('Update-XP API Request:', {
-    method: req.method,
-    url: req.url,
-    query: req.query,
-    body: req.body,
-    headers: req.headers
-  });
-
   // Handle OPTIONS request (preflight)
   if (req.method === 'OPTIONS') {
     res.status(200).end();
@@ -27,7 +18,7 @@ module.exports = async (req, res) => {
   // Only allow POST requests
   if (req.method !== 'POST') {
     return res.status(405).json({ 
-      message: 'Method not allowed for update-xp endpoint',
+      message: 'Method not allowed',
       allowedMethods: ['POST'],
       receivedMethod: req.method
     });
@@ -37,10 +28,8 @@ module.exports = async (req, res) => {
     // Connect to the database
     await connectToDatabase();
     
-    // Get wallet address from URL path parameter
-    const walletAddress = req.query.walletAddress || '';
-    
-    console.log('Extracted wallet address:', walletAddress);
+    // Get wallet address from query parameters (Vercel passes route params as query)
+    const { walletAddress } = req.query;
     
     if (!walletAddress) {
       return res.status(400).json({ message: 'Wallet address is required' });
@@ -148,14 +137,13 @@ module.exports = async (req, res) => {
       });
     }
 
-    // FIX: Manually recalculate and update the level based on XP
-    // This is needed because findOneAndUpdate doesn't trigger the pre('save') middleware
+    // Manually recalculate level since findOneAndUpdate doesn't trigger pre('save') middleware
     const updatedLevel = Math.min(Math.floor(user.xp / 10) + 1, 100);
     
-    // Only update if level has changed
+    // Update level if it has changed
     if (user.level !== updatedLevel) {
       user.level = updatedLevel;
-      await user.save(); // This will trigger the pre('save') middleware but we've already set the level
+      await user.save();
     }
     
     return res.status(200).json({
@@ -173,8 +161,7 @@ module.exports = async (req, res) => {
     console.error('Error updating XP:', error);
     return res.status(500).json({ 
       message: 'Server error', 
-      error: error.message,
-      stack: error.stack
+      error: error.message
     });
   }
 };

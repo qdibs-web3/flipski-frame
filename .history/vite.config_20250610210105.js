@@ -15,7 +15,7 @@ export default defineConfig({
       '0.0.0.0',
       '.trycloudflare.com', // Allow all cloudflare tunnel subdomains
       '.ngrok.io', // Allow ngrok tunnels as well
-      '.flipski-frame.vercel.app',
+      '.flipski-frame.vercel.app'
       '.loca.lt', // Allow localtunnel
     ],
     headers: {
