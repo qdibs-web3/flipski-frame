@@ -68,11 +68,11 @@ export const useMiniApp = () => {
             
             console.log('SDK loaded, checking if in Mini App...');
             
-            // Use the SDK's detection method with longer timeout for mobile
+            // Use the SDK's detection method with timeout
             const sdkResult = await Promise.race([
               importedSdk.isInMiniApp(),
               new Promise((_, reject) => 
-                setTimeout(() => reject(new Error('SDK timeout')), 3000) // Increased timeout for mobile
+                setTimeout(() => reject(new Error('SDK timeout')), 3000)
               )
             ]);
             
@@ -86,20 +86,10 @@ export const useMiniApp = () => {
           } catch (sdkError) {
             console.warn('SDK detection failed, using fallback:', sdkError);
             
-            // Fallback: if we have strong indicators, assume mini app AND try to load SDK
+            // Fallback: if we have strong indicators, assume mini app
             if (hasFarcasterUA || hasFarcasterParams || isInFrame) {
               console.log('Fallback: Assuming Farcaster mini app based on context');
               miniAppDetected = true;
-              
-              // CRITICAL: Try to load SDK even if detection failed
-              try {
-                console.log('Loading SDK in fallback mode...');
-                const { sdk: fallbackSdk } = await import('@farcaster/frame-sdk');
-                farcasterSdk = fallbackSdk;
-                console.log('SDK loaded successfully in fallback mode');
-              } catch (fallbackSdkError) {
-                console.error('Failed to load SDK in fallback mode:', fallbackSdkError);
-              }
             }
           }
         }
@@ -108,18 +98,6 @@ export const useMiniApp = () => {
         if (!miniAppDetected && isInFrame) {
           console.log('Frame detected, assuming mini app for development');
           miniAppDetected = true;
-          
-          // CRITICAL: Also try to load SDK for development scenarios
-          if (!farcasterSdk) {
-            try {
-              console.log('Loading SDK for development scenario...');
-              const { sdk: devSdk } = await import('@farcaster/frame-sdk');
-              farcasterSdk = devSdk;
-              console.log('SDK loaded for development scenario');
-            } catch (devSdkError) {
-              console.error('Failed to load SDK for development:', devSdkError);
-            }
-          }
         }
 
         console.log('Final detection result:', miniAppDetected);
@@ -153,84 +131,61 @@ export const useMiniApp = () => {
 
   // Call ready when app is ready to be displayed
   const callReady = async () => {
-    if (isMiniApp && !isReady) {
-      let workingSdk = sdk;
-      
-      // If we don't have SDK but we're in mini app, try to load it
-      if (!workingSdk) {
+    if (sdk && isMiniApp && !isReady) {
+      try {
+        console.log('Starting SDK ready sequence...');
+        
+        // Follow official demo pattern: get context first
+        console.log('Getting SDK context...');
+        const context = await sdk.context;
+        console.log('SDK context loaded:', context);
+        
+        // Set up ethereum provider
+        console.log('Setting up ethereum provider...');
+        const ethereumProvider = await sdk.wallet.getEthereumProvider();
+        if (ethereumProvider) {
+          ethereumProvider.on("chainChanged", (chainId) => {
+            console.log("[EthereumProvider] chainChanged", chainId);
+          });
+          console.log('Ethereum provider set up successfully');
+        }
+        
+        // Set up event listeners
+        console.log('Setting up SDK event listeners...');
+        sdk.on("frameAdded", ({ notificationDetails }) => {
+          console.log('Frame added event:', notificationDetails);
+        });
+        
+        sdk.on("frameAddRejected", ({ reason }) => {
+          console.log('Frame add rejected:', reason);
+        });
+        
+        sdk.on("frameRemoved", () => {
+          console.log('Frame removed');
+        });
+        
+        // NOW call ready() - this is the critical timing
+        console.log('All setup complete, calling ready()...');
+        await sdk.actions.ready({});
+        console.log('SDK ready called successfully - splash screen should be dismissed');
+        setIsReady(true);
+        
+      } catch (err) {
+        console.error('Error in SDK ready sequence:', err);
+        // Even if there's an error, try to call ready() to dismiss splash
         try {
-          console.log('No SDK available, attempting to load SDK for ready call...');
-          const { sdk: loadedSdk } = await import('@farcaster/frame-sdk');
-          workingSdk = loadedSdk;
-          setSdk(loadedSdk); // Update the state
-          console.log('SDK loaded successfully for ready call');
-        } catch (sdkLoadError) {
-          console.error('Failed to load SDK for ready call:', sdkLoadError);
+          await sdk.actions.ready({});
+          console.log('Ready called in error handler');
+          setIsReady(true);
+        } catch (readyError) {
+          console.error('Failed to call ready in error handler:', readyError);
           // Mark as ready anyway to prevent infinite loading
           setIsReady(true);
-          return;
         }
       }
-      
-      if (workingSdk) {
-        try {
-          console.log('Starting SDK ready sequence...');
-          
-          // Follow official demo pattern: get context first
-          console.log('Getting SDK context...');
-          const context = await workingSdk.context;
-          console.log('SDK context loaded:', context);
-          
-          // Set up ethereum provider
-          console.log('Setting up ethereum provider...');
-          const ethereumProvider = await workingSdk.wallet.getEthereumProvider();
-          if (ethereumProvider) {
-            ethereumProvider.on("chainChanged", (chainId) => {
-              console.log("[EthereumProvider] chainChanged", chainId);
-            });
-            console.log('Ethereum provider set up successfully');
-          }
-          
-          // Set up event listeners
-          console.log('Setting up SDK event listeners...');
-          workingSdk.on("frameAdded", ({ notificationDetails }) => {
-            console.log('Frame added event:', notificationDetails);
-          });
-          
-          workingSdk.on("frameAddRejected", ({ reason }) => {
-            console.log('Frame add rejected:', reason);
-          });
-          
-          workingSdk.on("frameRemoved", () => {
-            console.log('Frame removed');
-          });
-          
-          // NOW call ready() - this is the critical timing
-          console.log('All setup complete, calling ready()...');
-          await workingSdk.actions.ready({});
-          console.log('SDK ready called successfully - splash screen should be dismissed');
-          setIsReady(true);
-          
-        } catch (err) {
-          console.error('Error in SDK ready sequence:', err);
-          // Even if there's an error, try to call ready() to dismiss splash
-          try {
-            await workingSdk.actions.ready({});
-            console.log('Ready called in error handler');
-            setIsReady(true);
-          } catch (readyError) {
-            console.error('Failed to call ready in error handler:', readyError);
-            // Mark as ready anyway to prevent infinite loading
-            setIsReady(true);
-          }
-        }
-      } else {
-        // If we still don't have SDK, mark as ready to prevent infinite loading
-        console.log('Mini app detected but no SDK available after all attempts, marking as ready');
-        setIsReady(true);
-      }
-    } else if (!isMiniApp) {
-      // If not in mini app, mark as ready immediately
+    } else if (isMiniApp && !sdk) {
+      // If we're in mini app but don't have SDK, still mark as ready
+      console.log('Mini app detected but no SDK available, marking as ready');
       setIsReady(true);
     }
   };
