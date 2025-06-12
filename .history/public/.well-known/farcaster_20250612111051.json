@@ -22,11 +22,13 @@
     "requiredCapabilities": [
       "actions.signIn",
       "wallet.getEthereumProvider"
-    ],
-    "accountAssociation": {
-      "header": "eyJmaWQiOjkxNjQ4MiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDA0NjE5ZTY2MDMxN0E2OEIyODA1NTVGQmQ0MUYxNjg4MTE2NkU4NjUifQ",
-      "payload": "eyJkb21haW4iOiJmbGlwc2tpLWZyYW1lLnZlcmNlbC5hcHAifQ",
-      "signature": "MHg1NDJlNDAwYjMyNWQ1ZmUxMmRmN2U1NGE1ZDVjZTVjYzc5MmVmMjkyZTU2MjY5NDM0YjM4NWI1MmEyZmU0NjE4MWRmNmJiNzM4ODNhMjU0MGFhNmJjOWU0MjFlM2JkOGIyYTE4YWJjMzk0NmU0YjllNmYzMzUwY2M4NDhiM2QyMTFi"
+    ]
+    {
+      "accountAssociation": {
+        "header": "eyJmaWQiOjkxNjQ4MiwidHlwZSI6ImN1c3RvZHkiLCJrZXkiOiIweDA0NjE5ZTY2MDMxN0E2OEIyODA1NTVGQmQ0MUYxNjg4MTE2NkU4NjUifQ",
+        "payload": "eyJkb21haW4iOiJmbGlwc2tpLWZyYW1lLnZlcmNlbC5hcHAifQ",
+        "signature": "MHg1NDJlNDAwYjMyNWQ1ZmUxMmRmN2U1NGE1ZDVjZTVjYzc5MmVmMjkyZTU2MjY5NDM0YjM4NWI1MmEyZmU0NjE4MWRmNmJiNzM4ODNhMjU0MGFhNmJjOWU0MjFlM2JkOGIyYTE4YWJjMzk0NmU0YjllNmYzMzUwY2M4NDhiM2QyMTFi"
+      }
     }
   }
 }
