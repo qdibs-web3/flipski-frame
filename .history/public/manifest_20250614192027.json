@@ -1,0 +1,16 @@
+{
+  "name": "FLIPSKI",
+  "short_name": "FLIPSKI", 
+  "description": "Blockchain-based coin flip game on Base network",
+  "start_url": "/",
+  "display": "standalone",
+  "background_color": "#1a1a1a",
+  "theme_color": "#667eea",
+  "icons": [
+    {
+      "src": "/flip.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    }
+  ]
+}
